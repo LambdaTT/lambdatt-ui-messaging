@@ -21,7 +21,7 @@
                   <q-icon v-if="notification.important === 'Y'" size="12px" class="text-warning q-mr-sm"
                     name="fas fa-star" style="padding-bottom: 2px;">
                   </q-icon>
-                  <div class="text-bold" style="font-size: 0.9rem; word-break: break-word;"> 
+                  <div class="text-bold" style="font-size: 0.9rem; word-break: break-word;">
                     {{ notification.title }}
                   </div>
                 </div>
@@ -82,10 +82,10 @@
 </template>
 <script>
 // Services:
-import { ENDPOINTS } from 'src/services/endpoints'
+import ENDPOINTS from '../ENDPOINTS'
 
 export default {
-  name: 'pages-loggedarea-notifications',
+  name: 'lambdatt-ui-messaging-pages-notifications',
 
   data() {
     return {
@@ -94,6 +94,10 @@ export default {
       notificationContent: null,  // Conteúdo do Modal
       showModal: false,
       stopRequests: false,
+
+      // Services:
+      $http: this.$getService('toolcase/http'),
+      $utils: this.$getService('toolcase/utils'),
     }
   },
 
@@ -133,7 +137,7 @@ export default {
     async getNotifications(params) {
       // API request
       try {
-        const response = await this.$http.get(ENDPOINTS.NOTIFICATION, params);
+        const response = await this.$http.get(ENDPOINTS.NOTIFICATIONS.NOTIFICATION, params);
         if (response && response.data) {
           return response.data.map((notify) => ({
             date: this.timeAgo(notify.dt_created),
@@ -165,17 +169,12 @@ export default {
 
     async markAsRead(item) {
       try {
-        // Emitting the loading event
-        this.$emit('load', 'notifications-update');
         // API request
-        await this.$http.put(`${ENDPOINTS.NOTIFICATION}/mark-as-read/${item.ds_key}`);
+        await this.$http.put(`${ENDPOINTS.NOTIFICATIONS.NOTIFICATION}/mark-as-read/${item.ds_key}`);
         item.read = 'Y';
       } catch (error) {
         this.$utils.notifyError(error);
         console.error("An error occurred while attempting to update the object's data.", error);
-      } finally {
-        // Finalizing the loading event
-        this.$emit('loaded', 'notifications-update');
       }
     },
 
@@ -208,7 +207,7 @@ export default {
 
       // API request
       try {
-        await this.$http.delete(ENDPOINTS.NOTIFICATION + '/' + key);
+        await this.$http.delete(ENDPOINTS.NOTIFICATIONS.NOTIFICATION + '/' + key);
         this.$utils.notify({
           message: 'Notificação excluída com sucesso',
           type: 'positive',
