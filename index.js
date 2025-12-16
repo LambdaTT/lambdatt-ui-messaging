@@ -3,7 +3,7 @@
 // Enpoints:
 import ENDPOINTS from './src/ENDPOINTS.js'
 
-export const NAME = 'msg'
+export const NAME = 'messaging'
 
 function mapServices() {
   const services = import.meta.globEager('./src/services/**/*.js');
