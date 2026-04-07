@@ -6,7 +6,7 @@ import ENDPOINTS from './src/ENDPOINTS.js'
 export const NAME = 'messaging'
 
 function mapServices() {
-  const services = import.meta.globEager('./src/services/**/*.js');
+  const services = import.meta.glob('./src/services/**/*.js', { eager: true });
 
   const servicesMap = {};
   for (const path in services) {
@@ -22,7 +22,7 @@ function mapServices() {
 }
 
 function mapComponents() {
-  const components = import.meta.globEager('./src/components/**/*.vue');
+  const components = import.meta.glob('./src/components/**/*.vue', { eager: true });
 
   const componentsMap = {};
   for (const path in components) {
@@ -35,7 +35,7 @@ function mapComponents() {
 }
 
 function mapPages() {
-  const pages = import.meta.globEager('./src/pages/**/*.vue');
+  const pages = import.meta.glob('./src/pages/**/*.vue', { eager: true });
 
   const pagesMap = {};
   for (const path in pages) {
@@ -62,7 +62,7 @@ function mapPages() {
 }
 
 function mapLayouts() {
-  const layouts = import.meta.globEager('./src/layouts/**/*.vue');
+  const layouts = import.meta.glob('./src/layouts/**/*.vue', { eager: true });
 
   const layoutsMap = {};
   for (const path in layouts) {
