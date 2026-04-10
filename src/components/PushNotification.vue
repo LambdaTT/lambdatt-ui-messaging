@@ -20,6 +20,8 @@
 </template>
 
 <script>
+import ENDPOINTS from "../ENDPOINTS";
+
 export default {
   name: "component-PushNotification",
 
@@ -52,7 +54,7 @@ export default {
         const token = await this.$getService("messaging/firebase").getToken();
         await this.$getService("toolcase/http")
           .setHeader("Iam-Device-Key", deviceKey)
-          .post("/api/messaging/v1/push/subscription", { token: token });
+          .post(ENDPOINTS.PUSH.SUBSCRIPTION, { token: token });
 
         localStorage.setItem("FCMPushToken", token);
       } catch (error) {
@@ -70,8 +72,7 @@ export default {
       if (!!currentToken && currentToken !== validToken) {
         try {
           await this.$getService("toolcase/http").put(
-            `/api/messaging/v1/push/subscription/${currentToken}`,
-            { newToken: validToken },
+            `${ENDPOINTS.PUSH.SUBSCRIPTION}/${currentToken}/${validToken}`,
           );
           localStorage.setItem("FCMPushToken", validToken);
         } catch (error) {
