@@ -52,7 +52,7 @@ export default {
         const token = await this.$getService("messaging/firebase").getToken();
         await this.$getService("toolcase/http")
           .setHeader("Iam-Device-Key", deviceKey)
-          .post("/api/messaging/v1/push/subscription", { token: token });
+          .post("/api/messaging/v1/push/subscription", { tx_token: token });
 
         localStorage.setItem("FCMPushToken", token);
       } catch (error) {
