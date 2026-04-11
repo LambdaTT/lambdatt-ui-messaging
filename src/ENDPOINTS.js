@@ -1,8 +1,13 @@
 export default {
-    NOTIFICATIONS: {
-        COUNT: '/messaging/v1/notification/count-unread',
-        NOTIFICATION: '/api/messaging/v1/notification',           // GET/PUT
-        TYPES: '/api/messaging/v1/notification/headlines',      // GET
-        PUSH: '/api/messaging/v1/push',
-    }
-}
+  NOTIFICATIONS: {
+    COUNT_UNREAD: "/messaging/v1/notification/count-unread", // GET
+    WATCH_COUNT: "/messaging/v1/notification/watch-count", // GET — long polling
+    MARK_AS_READ: "/messaging/v1/notification/mark-as-read", // PUT /:key
+    NOTIFICATION: "/messaging/v1/notification", // GET/PUT
+    HEADLINES: "/messaging/v1/notification/headlines", // GET
+  },
+
+  PUSH: {
+    SUBSCRIPTION: "/messaging/v1/push/subscription", // POST/PUT /:oldTOken/:newTOken
+  },
+};

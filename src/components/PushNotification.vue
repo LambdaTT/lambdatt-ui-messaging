@@ -20,6 +20,8 @@
 </template>
 
 <script>
+import ENDPOINTS from "../ENDPOINTS";
+
 export default {
   name: "component-PushNotification",
 
@@ -31,9 +33,11 @@ export default {
 
   methods: {
     async enable() {
+      console.log("enable() clicked");
       const permission = await Notification.requestPermission();
 
       if (permission === "granted") {
+        console.log("push permission granted");
         if (!localStorage.getItem("FCMPushToken")) {
           await this.createToken();
         } else {
@@ -45,14 +49,19 @@ export default {
     },
 
     async createToken() {
+      console.log("createToken() triggered");
       // Handle device key
       const deviceKey = await this.$getService("iam/device").getDeviceKey();
 
+      console.log("Device Key:", deviceKey);
+
       try {
         const token = await this.$getService("messaging/firebase").getToken();
+        console.log("FCM Token", token);
         await this.$getService("toolcase/http")
           .setHeader("Iam-Device-Key", deviceKey)
-          .post("/api/messaging/v1/push/subscription", { tx_token: token });
+          .post(ENDPOINTS.PUSH.SUBSCRIPTION, { tx_token: token });
+        console.log("Subscription endpoint must be requested at this point");
 
         localStorage.setItem("FCMPushToken", token);
       } catch (error) {
@@ -70,8 +79,7 @@ export default {
       if (!!currentToken && currentToken !== validToken) {
         try {
           await this.$getService("toolcase/http").put(
-            `/api/messaging/v1/push/subscription/${currentToken}`,
-            { newToken: validToken },
+            `${ENDPOINTS.PUSH.SUBSCRIPTION}/${currentToken}/${validToken}`,
           );
           localStorage.setItem("FCMPushToken", validToken);
         } catch (error) {
