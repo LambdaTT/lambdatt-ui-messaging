@@ -1,34 +1,42 @@
-import { initializeApp } from "firebase/app";
-import { getMessaging, getToken } from "firebase/messaging";
+import { initializeApp } from 'firebase/app'
+import { getMessaging, getToken } from 'firebase/messaging'
 
 // Your web app's Firebase configuration
 const firebaseApp = initializeApp({
-  apiKey: "AIzaSyBgnlzAzAe1R7pZwjQJVRpUjKdA470G6TY",
-  authDomain: "sindiapp-notification.firebaseapp.com",
-  projectId: "sindiapp-notification",
-  storageBucket: "sindiapp-notification.firebasestorage.app",
-  messagingSenderId: "448324716707",
-  appId: "1:448324716707:web:401916deff3bade1f55716",
-});
+  apiKey: 'AIzaSyCO-cXs_d-hc5TUGm3Fqf8IBRvgO7RdtxI',
+  authDomain: 'cartappio.firebaseapp.com',
+  projectId: 'cartappio',
+  storageBucket: 'cartappio.firebasestorage.app',
+  messagingSenderId: '633594192092',
+  appId: '1:633594192092:web:09faa88f635f93205e5419',
+  measurementId: 'G-LH1J4W7QY8',
+})
 
 // Initialize Firebase Cloud Messaging
-const messaging = getMessaging(firebaseApp);
-const vapidKey = 'BDdP-T2uVLZkytvcZ3cy7zls0LTdwRkMcsU-wDELTTmCX_PqCIc7Y5MXG9Qqau1RFOBJFJvy5lqaSITspzIgEyI';
+const messaging = getMessaging(firebaseApp)
+const vapidKey =
+  'BLTAuFleVwsme2xsAlGfhnh7fP0aVvoWtYs9XG13UpKmDRb4uij1iNhPPdAebimhGblsWS8JLbz3LLoTuDHHDoM'
 
 export default {
   async getToken() {
     try {
-      let registration = await navigator.serviceWorker.getRegistration();
+      let registration = await navigator.serviceWorker.getRegistration()
       if (!registration) {
-        const swFile = typeof process !== 'undefined' && process.env.SERVICE_WORKER_FILE ? process.env.SERVICE_WORKER_FILE : '/sw.js';
-        await navigator.serviceWorker.register(swFile);
+        const swFile =
+          typeof process !== 'undefined' && process.env.SERVICE_WORKER_FILE
+            ? process.env.SERVICE_WORKER_FILE
+            : '/sw.js'
+        await navigator.serviceWorker.register(swFile)
       }
-      registration = await navigator.serviceWorker.ready;
-      
-      return await getToken(messaging, { vapidKey: vapidKey, serviceWorkerRegistration: registration });
+      registration = await navigator.serviceWorker.ready
+
+      return await getToken(messaging, {
+        vapidKey: vapidKey,
+        serviceWorkerRegistration: registration,
+      })
     } catch (error) {
-      console.error('Error retrieving Firebase Push Notification token.', error);
-      throw error;
+      console.error('Error retrieving Firebase Push Notification token.', error)
+      throw error
     }
   },
 }
