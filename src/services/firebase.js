@@ -18,10 +18,17 @@ const vapidKey = 'BDdP-T2uVLZkytvcZ3cy7zls0LTdwRkMcsU-wDELTTmCX_PqCIc7Y5MXG9Qqau
 export default {
   async getToken() {
     try {
-      const registration = await navigator.serviceWorker.ready || await navigator.serviceWorker.register('/sw.js');
+      let registration = await navigator.serviceWorker.getRegistration();
+      if (!registration) {
+        const swFile = typeof process !== 'undefined' && process.env.SERVICE_WORKER_FILE ? process.env.SERVICE_WORKER_FILE : '/sw.js';
+        await navigator.serviceWorker.register(swFile);
+      }
+      registration = await navigator.serviceWorker.ready;
+      
       return await getToken(messaging, { vapidKey: vapidKey, serviceWorkerRegistration: registration });
     } catch (error) {
       console.error('Error retrieving Firebase Push Notification token.', error);
+      throw error;
     }
   },
 }
