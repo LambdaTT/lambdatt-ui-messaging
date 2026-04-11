@@ -33,9 +33,11 @@ export default {
 
   methods: {
     async enable() {
+      console.log("enable() clicked");
       const permission = await Notification.requestPermission();
 
       if (permission === "granted") {
+        console.log("push permission granted");
         if (!localStorage.getItem("FCMPushToken")) {
           await this.createToken();
         } else {
@@ -47,14 +49,19 @@ export default {
     },
 
     async createToken() {
+      console.log("createToken() triggered");
       // Handle device key
       const deviceKey = await this.$getService("iam/device").getDeviceKey();
 
+      console.log("Device Key:", deviceKey);
+
       try {
         const token = await this.$getService("messaging/firebase").getToken();
+        console.log("FCM Token", token);
         await this.$getService("toolcase/http")
           .setHeader("Iam-Device-Key", deviceKey)
-          .post(ENDPOINTS.PUSH.SUBSCRIPTION, { token: token });
+          .post(ENDPOINTS.PUSH.SUBSCRIPTION, { tx_token: token });
+        console.log("Subscription endpoint must be requested at this point");
 
         localStorage.setItem("FCMPushToken", token);
       } catch (error) {
