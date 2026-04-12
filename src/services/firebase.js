@@ -1,21 +1,15 @@
 import { initializeApp } from 'firebase/app'
 import { getMessaging, getToken } from 'firebase/messaging'
+import $sys from 'src/lambdatt'
+
+const configs = $sys.getConfigs()
 
 // Your web app's Firebase configuration
-const firebaseApp = initializeApp({
-  apiKey: 'AIzaSyCO-cXs_d-hc5TUGm3Fqf8IBRvgO7RdtxI',
-  authDomain: 'cartappio.firebaseapp.com',
-  projectId: 'cartappio',
-  storageBucket: 'cartappio.firebasestorage.app',
-  messagingSenderId: '633594192092',
-  appId: '1:633594192092:web:09faa88f635f93205e5419',
-  measurementId: 'G-LH1J4W7QY8',
-})
+const firebaseApp = initializeApp(configs.fcm.app)
 
 // Initialize Firebase Cloud Messaging
 const messaging = getMessaging(firebaseApp)
-const vapidKey =
-  'BLTAuFleVwsme2xsAlGfhnh7fP0aVvoWtYs9XG13UpKmDRb4uij1iNhPPdAebimhGblsWS8JLbz3LLoTuDHHDoM'
+const vapidKey = configs.fcm.vapidKey
 
 export default {
   async getToken() {
