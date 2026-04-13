@@ -25,6 +25,7 @@
 
 <script>
 import ENDPOINTS from "../ENDPOINTS";
+import { getConfigs } from "src/configs";
 
 export default {
   name: "lambdattui-messaging-components-notification-bell",
@@ -37,7 +38,7 @@ export default {
   },
 
   async mounted() {
-    this.countNotifications();
+    this.countNotifications(true);
     this.watchCountNotifications();
   },
 
@@ -49,12 +50,23 @@ export default {
   },
 
   methods: {
-    async countNotifications() {
+    async countNotifications(isInitialLoad = false) {
       try {
         const { data } = await this.$getService("toolcase/http").get(
           ENDPOINTS.NOTIFICATIONS.COUNT_UNREAD,
         );
-        this.notificationsCount = data || 0;
+        
+        const count = parseInt(data, 10) || 0;
+
+        if (!isInitialLoad && count > this.notificationsCount) {
+          const soundPath = getConfigs("notifications")?.sound;
+          if (soundPath) {
+            const audio = new Audio(soundPath);
+            audio.play().catch(e => console.warn("Failed to play notification sound", e));
+          }
+        }
+
+        this.notificationsCount = count;
       } catch (e) {
         console.error(e);
       }
@@ -70,7 +82,7 @@ export default {
           this.watchAbortController.signal,
         );
 
-        this.countNotifications();
+        await this.countNotifications(false);
         await new Promise((r) => setTimeout(r, 500));
       } catch (e) {
         if (
