@@ -33,20 +33,32 @@ export default {
   data() {
     return {
       notificationsCount: 0,
-      unmounted: false,
     };
   },
 
-  async mounted() {
+  mounted() {
+    // Load the initial count immediately.
     this.countNotifications(true);
-    this.watchCountNotifications();
+
+    // Subscribe to the shared SSE stream (opens the connection if not yet open).
+    this._onChanged = () => this.countNotifications(false);
+
+    this.$getService("toolcase/eventbroadcaster").$on(
+      "notifications:changed",
+      this._onChanged,
+    );
+
+    this.$getService("messaging/notification-stream").subscribe();
   },
 
   beforeUnmount() {
-    this.unmounted = true;
-    if (this.watchAbortController) {
-      this.watchAbortController.abort();
-    }
+    // Clean up the listener and release our share of the SSE connection.
+    // When the last consumer unsubscribes, the connection is closed automatically.
+    this.$getService("toolcase/eventbroadcaster").$off(
+      "notifications:changed",
+      this._onChanged,
+    );
+    this.$getService("messaging/notification-stream").unsubscribe();
   },
 
   methods: {
@@ -55,50 +67,24 @@ export default {
         const { data } = await this.$getService("toolcase/http").get(
           ENDPOINTS.NOTIFICATIONS.COUNT_UNREAD,
         );
-        
+
         const count = parseInt(data, 10) || 0;
 
         if (!isInitialLoad && count > this.notificationsCount) {
           const soundPath = getConfigs("notifications")?.sound;
           if (soundPath) {
             const audio = new Audio(soundPath);
-            audio.play().catch(e => console.warn("Failed to play notification sound", e));
+            audio
+              .play()
+              .catch((e) =>
+                console.warn("Failed to play notification sound", e),
+              );
           }
         }
 
         this.notificationsCount = count;
       } catch (e) {
         console.error(e);
-      }
-    },
-
-    async watchCountNotifications() {
-      if (this.unmounted) return;
-      this.watchAbortController = new AbortController();
-      try {
-        await this.$getService("toolcase/http").get(
-          ENDPOINTS.NOTIFICATIONS.WATCH_COUNT,
-          null,
-          this.watchAbortController.signal,
-        );
-
-        await this.countNotifications(false);
-        await new Promise((r) => setTimeout(r, 500));
-      } catch (e) {
-        if (
-          e?.code === "ERR_CANCELED" ||
-          e?.name === "AbortError" ||
-          this.unmounted
-        ) {
-          return;
-        }
-        console.warn("Notifications watch cycle:", e?.message);
-        // Pequena espera na falha antes de relogar para evitar infinite blind fast-loop
-        await new Promise((r) => setTimeout(r, 3000));
-      } finally {
-        if (!this.unmounted) {
-          this.watchCountNotifications();
-        }
       }
     },
   },

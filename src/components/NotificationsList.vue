@@ -138,19 +138,31 @@ export default {
       },
       notificationContent: null,
       showModal: false,
-      watching: false,
-      watchAbortController: null,
     };
   },
 
   mounted() {
-    this.watching = true;
-    this.watchNotifications();
+    this._onChanged = () => {
+      if (typeof this.scrollState.reload === "function") {
+        this.scrollState.reload();
+      }
+    };
+
+    this.$getService("toolcase/eventbroadcaster").$on(
+      "notifications:changed",
+      this._onChanged,
+    );
+
+    this.$getService("messaging/notification-stream").subscribe();
   },
 
   beforeUnmount() {
-    this.watching = false;
-    this.watchAbortController?.abort();
+    this.$getService("toolcase/eventbroadcaster").$off(
+      "notifications:changed",
+      this._onChanged,
+    );
+
+    this.$getService("messaging/notification-stream").unsubscribe();
   },
 
   methods: {
@@ -236,28 +248,6 @@ export default {
         console.error("Failed to delete the object.", error);
       } finally {
         this.$emit("loaded", "item-remove");
-      }
-    },
-
-    async watchNotifications() {
-      this.watchAbortController = new AbortController();
-      try {
-        await this.$getService("toolcase/http").get(
-          ENDPOINTS.NOTIFICATIONS.WATCH_COUNT,
-          null,
-          this.watchAbortController.signal,
-        );
-
-        if (typeof this.scrollState.reload === "function") {
-          this.scrollState.reload();
-        }
-        await new Promise((r) => setTimeout(r, 500));
-      } catch (e) {
-        if (e?.code === "ERR_CANCELED" || e?.name === "AbortError") return;
-        console.warn("Notifications watch cycle:", e?.message);
-        await new Promise((r) => setTimeout(r, 3000));
-      } finally {
-        if (this.watching) this.watchNotifications();
       }
     },
   },

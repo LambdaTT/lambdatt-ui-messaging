@@ -1,7 +1,7 @@
 export default {
   NOTIFICATIONS: {
     COUNT_UNREAD: "/messaging/v1/notification/count-unread", // GET
-    WATCH_COUNT: "/messaging/v1/notification/watch-count", // GET — long polling
+    WATCH: "/messaging/v1/notification/watch", // GET — SSE stream
     MARK_AS_READ: "/messaging/v1/notification/mark-as-read", // PUT /:key
     NOTIFICATION: "/messaging/v1/notification", // GET/PUT
     HEADLINES: "/messaging/v1/notification/headlines", // GET
