@@ -38,7 +38,7 @@
  */
 
 import ENDPOINTS from "../ENDPOINTS.js";
-import eventbroadcaster from "../../lambdatt-ui-toolcase/src/services/eventbroadcaster.js";
+import eventbroadcaster from "src/modules/lambdatt-ui-toolcase/src/services/eventbroadcaster.js";
 
 const EVENT_NAME = "notifications:changed";
 
@@ -76,8 +76,9 @@ const notificationStream = {
   _connect() {
     if (this._sse) return; // already connected
 
-    const url = `${process.env.API}${ENDPOINTS.NOTIFICATIONS.WATCH}`;
-    this._sse = new EventSource(url, { withCredentials: true });
+    const sessionKey = localStorage.getItem("iam_session_key") || "";
+    const url = `${process.env.API}${ENDPOINTS.NOTIFICATIONS.WATCH}?iam_session_key=${encodeURIComponent(sessionKey)}`;
+    this._sse = new EventSource(url);
 
     this._sse.onmessage = (e) => {
       try {
