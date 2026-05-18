@@ -11,5 +11,9 @@ export default {
     SUBSCRIPTION: '/messaging/v1/push/subscription', // POST/PUT /:oldTOken/:newTOken
   },
 
-  CHAT: {},
+  CHAT: {
+    CHAT: '/messaging/v1/chat', // GET/PUT/DELETE / :chatKey
+    SUMMARY: '/messaging/v1/chat-summary', // GET / :participant
+    MESSAGE: '/messaging/v1/chat-message', // GET/POST/DELETE / :chatKey/:msgKey
+  },
 }
