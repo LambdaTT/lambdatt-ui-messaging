@@ -1,26 +1,14 @@
 <template>
-  <q-btn
-    class="q-ma-sm"
-    flat
-    round
-    icon="fab fa-whatsapp"
-    size="sm"
-    @click="$router.push(route)"
-  >
+  <q-btn class="q-ma-sm" flat round :icon="Icon" size="sm" @click="$router.push(route)">
     <q-tooltip v-if="count === 0">Nenhuma conversa pendente</q-tooltip>
-    <q-tooltip v-else>{{ count }} conversa(s) aguardando atendimento</q-tooltip>
-    <q-badge
-      rounded
-      v-if="count > 0"
-      color="green-8"
-      floating
-    >{{ count }}</q-badge>
+    <q-tooltip v-else>{{ count }} mensagen(s) aguardando atendimento</q-tooltip>
+    <q-badge rounded v-if="count > 0" color="red-8" floating>{{ count }}</q-badge>
   </q-btn>
 </template>
 
 <script>
-import chatStream, { CHAT_EVENT } from 'src/services/chat-stream.js'
-import eventbroadcaster from 'src/modules/lambdatt-ui-toolcase/src/services/eventbroadcaster.js'
+import ENDPOINTS from '../ENDPOINTS'
+import chatStream, { CHAT_EVENT } from '../services/chat-stream.js'
 import { getConfigs } from 'src/configs'
 
 /** Event key used to communicate the currently active conversation ID. */
@@ -46,9 +34,13 @@ export default {
   name: 'lambdattui-messaging-components-chat-bell',
 
   props: {
-    countEndpoint: {
+    Participant: {
       type: String,
       required: true,
+    },
+    Icon: {
+      type: String,
+      default: () => 'fas fa-comments',
     },
     route: {
       type: String,
@@ -64,19 +56,21 @@ export default {
   },
 
   mounted() {
-    this.fetchCount(true)
+    this.fetchCount(false)
 
     this._onChatEvent = (msg) => this.onChatEvent(msg)
-    this._onActiveConv = (id) => { this.activeConversationId = id }
+    this._onActiveConv = (id) => {
+      this.activeConversationId = id
+    }
 
-    eventbroadcaster.$on(CHAT_EVENT, this._onChatEvent)
-    eventbroadcaster.$on(ACTIVE_CONV_EVENT, this._onActiveConv)
+    this.$getService('toolcase/eventbroadcaster').$on(CHAT_EVENT, this._onChatEvent)
+    this.$getService('toolcase/eventbroadcaster').$on(ACTIVE_CONV_EVENT, this._onActiveConv)
     chatStream.subscribe()
   },
 
   beforeUnmount() {
-    eventbroadcaster.$off(CHAT_EVENT, this._onChatEvent)
-    eventbroadcaster.$off(ACTIVE_CONV_EVENT, this._onActiveConv)
+    this.$getService('toolcase/eventbroadcaster').$off(CHAT_EVENT, this._onChatEvent)
+    this.$getService('toolcase/eventbroadcaster').$off(ACTIVE_CONV_EVENT, this._onActiveConv)
     chatStream.unsubscribe()
   },
 
@@ -87,18 +81,20 @@ export default {
      * currently being viewed by the operator.
      */
     onChatEvent(msg) {
-      const belongsToActive = this.activeConversationId != null
-        && String(msg?.id_msg_chat) === String(this.activeConversationId)
+      const belongsToActive =
+        this.activeConversationId != null &&
+        String(msg?.id_msg_chat) === String(this.activeConversationId)
 
-      this.fetchCount(false, belongsToActive)
+      if (!belongsToActive || msg.action == 'read') this.fetchCount()
     },
 
-    async fetchCount(isInitialLoad = false, suppressSound = false) {
+    async fetchCount(playSound = true) {
       try {
-        const { data } = await this.$getService('toolcase/http').get(this.countEndpoint)
+        const url = `${ENDPOINTS.CHAT.COUNT_UNREAD}/${this.Participant}`
+        const { data } = await this.$getService('toolcase/http').get(url)
         const newCount = parseInt(data, 10) || 0
 
-        if (!isInitialLoad && !suppressSound && newCount > this.count) {
+        if (playSound && newCount > this.count) {
           this.playSound()
         }
 
@@ -113,9 +109,7 @@ export default {
       if (!soundPath) return
 
       const audio = new Audio(soundPath)
-      audio
-        .play()
-        .catch((e) => console.warn('[ChatBell] Failed to play sound:', e))
+      audio.play().catch((e) => console.warn('[ChatBell] Failed to play sound:', e))
     },
   },
 }
