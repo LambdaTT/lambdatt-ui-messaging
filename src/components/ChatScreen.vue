@@ -419,7 +419,7 @@ export default {
         conversation.lastMessageContent = msg.tx_content
         conversation.lastMessageTime = this.formatTime(msg.dt_created)
         if (chatId != this.selectedConversation.id_msg_chat) conversation.unreadMsgsCount++
-      }
+      } else conversation.dt_ended = null
     },
 
     // ─── Helpers ─────────────────────────────────────
