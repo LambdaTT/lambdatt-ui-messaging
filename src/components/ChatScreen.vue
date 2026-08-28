@@ -418,7 +418,8 @@ export default {
       } else if (msg.ds_sender != 'operator') {
         conversation.lastMessageContent = msg.tx_content
         conversation.lastMessageTime = this.formatTime(msg.dt_created)
-        if (chatId != this.selectedConversation.id_msg_chat) conversation.unreadMsgsCount++
+        if (!this.selectedConversation || chatId != this.selectedConversation.id_msg_chat)
+          conversation.unreadMsgsCount++
       } else conversation.dt_ended = null
     },
 

@@ -19,9 +19,7 @@ import eventbroadcaster from 'src/modules/lambdatt-ui-toolcase/src/services/even
 export const CHAT_EVENT = 'chat:newMessage'
 
 function getTenantKey() {
-  const sub = window.location.hostname.split('.')[0] || ''
-  const isLocal = ['localhost', '127'].some((h) => sub.startsWith(h))
-  return isLocal ? 'default' : sub || 'default'
+  return window.location.hostname.split('.')[0] || 'default'
 }
 
 const chatStream = {
