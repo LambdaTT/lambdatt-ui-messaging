@@ -1,7 +1,28 @@
 <template>
   <div class="chat-container">
+    <!-- Backdrop (mobile drawer only) -->
+    <div
+      v-if="isMobile && drawerOpen"
+      class="drawer-backdrop"
+      @click="drawerOpen = false"
+    ></div>
+
     <!-- SIDEBAR -->
-    <div class="chat-sidebar">
+    <div class="chat-sidebar" :class="{ 'drawer-open': isMobile && drawerOpen }">
+      <!-- Drawer close button (mobile only) -->
+      <q-btn
+        v-if="isMobile"
+        flat
+        round
+        dense
+        icon="fas fa-times"
+        color="grey-8"
+        class="drawer-close-btn"
+        @click="drawerOpen = false"
+      >
+        <q-tooltip>Fechar conversas</q-tooltip>
+      </q-btn>
+
       <!-- Search field -->
       <div class="sidebar-search q-pa-sm">
         <InputField
@@ -105,6 +126,18 @@
       <template v-if="selectedConversation">
         <!-- Chat Header -->
         <q-toolbar class="chat-header bg-white">
+          <q-btn
+            v-if="isMobile"
+            flat
+            round
+            dense
+            icon="fas fa-bars"
+            color="grey-8"
+            class="q-mr-sm"
+            @click="toggleDrawer"
+          >
+            <q-tooltip>Ver conversas</q-tooltip>
+          </q-btn>
           <q-avatar :color="avatarColor(selectedConversation)" text-color="white" size="38px">
             {{ convInitials(selectedConversation)
             }}<span v-if="convCounterparts(selectedConversation)" class="avatar-counter">{{
@@ -183,6 +216,19 @@
 
       <!-- Empty State -->
       <div v-else class="chat-empty">
+        <q-btn
+          v-if="isMobile"
+          flat
+          round
+          dense
+          size="lg"
+          icon="fas fa-bars"
+          color="grey-8"
+          class="chat-empty-drawer-btn"
+          @click="toggleDrawer"
+        >
+          <q-tooltip>Ver conversas</q-tooltip>
+        </q-btn>
         <q-icon name="fas fa-comments" size="56px" color="grey-4" />
         <div class="text-h6 text-grey-6 q-mt-md">Selecione uma conversa</div>
         <div class="text-caption text-grey-5">
@@ -196,8 +242,13 @@
 <script>
 import ENDPOINTS from '../ENDPOINTS.js'
 import chatStream, { CHAT_EVENT } from '../services/chat-stream.js'
+import {
+  toggleDrawer as toggleDrawerState,
+  shouldAutoCloseOnSelect,
+} from '../services/conversation-drawer.js'
 
 const ACTIVE_CONV_EVENT = 'chat:activeConversation'
+const MOBILE_BREAKPOINT_QUERY = '(max-width: 768px)'
 
 const AVATAR_COLORS = [
   'teal-7',
@@ -237,6 +288,8 @@ export default {
       messagesLoading: false,
       newMessage: '',
       loading: false,
+      isMobile: false,
+      drawerOpen: false,
     }
   },
 
@@ -261,12 +314,21 @@ export default {
     this._onNewMessage = (msg) => this.onNewMessage(msg)
     this.$getService('toolcase/eventbroadcaster').$on(CHAT_EVENT, this._onNewMessage)
     chatStream.subscribe()
+
+    // Track viewport to drive the mobile drawer (sidebar becomes an overlay below 768px):
+    this._mobileQuery = window.matchMedia(MOBILE_BREAKPOINT_QUERY)
+    this.isMobile = this._mobileQuery.matches
+    this._onMobileQueryChange = (e) => {
+      this.isMobile = e.matches
+    }
+    this._mobileQuery.addEventListener('change', this._onMobileQueryChange)
   },
 
   beforeUnmount() {
     this.$getService('toolcase/eventbroadcaster').$off(CHAT_EVENT, this._onNewMessage)
     this.$getService('toolcase/eventbroadcaster').$broadcast(ACTIVE_CONV_EVENT, null)
     chatStream.unsubscribe()
+    this._mobileQuery?.removeEventListener('change', this._onMobileQueryChange)
   },
 
   methods: {
@@ -310,6 +372,15 @@ export default {
 
       // Notify ChatBell which conversation is currently being viewed:
       this.$getService('toolcase/eventbroadcaster').$broadcast(ACTIVE_CONV_EVENT, conv.id_msg_chat)
+
+      // Mobile: close the drawer to reveal the panel (menu-drawer UX). Desktop stays inert.
+      if (shouldAutoCloseOnSelect(this.isMobile)) {
+        this.drawerOpen = false
+      }
+    },
+
+    toggleDrawer() {
+      this.drawerOpen = toggleDrawerState(this.drawerOpen)
     },
 
     async sendMessage() {
@@ -682,11 +753,49 @@ export default {
   background: #fafafa;
 }
 
-/* ── RESPONSIVE ──────────────────────── */
+/* ── RESPONSIVE (mobile: sidebar becomes a drawer) ──── */
 @media (max-width: 768px) {
+  .chat-container {
+    position: relative;
+  }
+
+  .drawer-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 15;
+  }
+
   .chat-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 85%;
+    max-width: 320px;
+    height: 100%;
+    z-index: 20;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .chat-sidebar.drawer-open {
+    transform: translateX(0);
+  }
+
+  .drawer-close-btn {
+    align-self: flex-end;
+    margin: 4px 4px 0 0;
+  }
+
+  .chat-panel {
     width: 100%;
   }
+
+  .chat-empty-drawer-btn {
+    margin-bottom: 8px;
+  }
+
   .messages-area {
     padding: 16px;
   }
