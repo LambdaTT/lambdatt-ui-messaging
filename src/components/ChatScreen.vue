@@ -1,37 +1,19 @@
 <template>
   <div class="chat-container">
     <!-- Backdrop (mobile drawer only) -->
-    <div
-      v-if="isMobile && drawerOpen"
-      class="drawer-backdrop"
-      @click="drawerOpen = false"
-    ></div>
+    <div v-if="isMobile && drawerOpen" class="drawer-backdrop" @click="drawerOpen = false"></div>
 
     <!-- SIDEBAR -->
     <div class="chat-sidebar" :class="{ 'drawer-open': isMobile && drawerOpen }">
       <!-- Drawer close button (mobile only) -->
-      <q-btn
-        v-if="isMobile"
-        flat
-        round
-        dense
-        icon="fas fa-times"
-        color="grey-8"
-        class="drawer-close-btn"
-        @click="drawerOpen = false"
-      >
+      <q-btn v-if="isMobile" flat round dense icon="fas fa-times" color="grey-8" class="drawer-close-btn"
+        @click="drawerOpen = false">
         <q-tooltip>Fechar conversas</q-tooltip>
       </q-btn>
 
       <!-- Search field -->
       <div class="sidebar-search q-pa-sm">
-        <InputField
-          type="text"
-          v-model="search"
-          Label="Buscar conversa..."
-          Icon="fas fa-search"
-          dense
-        />
+        <InputField type="text" v-model="search" Label="Buscar conversa..." Icon="fas fa-search" dense />
       </div>
 
       <!-- Active Conversations -->
@@ -41,20 +23,15 @@
           Ativas ({{ filteredActive.length }})
         </q-item-label>
         <q-list class="conversation-list" separator>
-          <q-item
-            v-for="conv in filteredActive"
-            :key="conv.ds_key"
-            clickable
-            :active="selectedConversation?.ds_key === conv.ds_key"
-            active-class="bg-teal-1"
-            @click="selectConversation(conv)"
-          >
+          <q-item v-for="conv in filteredActive" :key="conv.ds_key" clickable
+            :active="selectedConversation?.ds_key === conv.ds_key" active-class="bg-teal-1"
+            @click="selectConversation(conv)">
             <q-item-section avatar>
               <q-avatar :color="avatarColor(conv)" text-color="white" size="40px">
                 {{ convInitials(conv)
                 }}<span v-if="convCounterparts(conv)" class="avatar-counter">{{
                   convCounterparts(conv)
-                }}</span>
+                  }}</span>
               </q-avatar>
             </q-item-section>
             <q-item-section>
@@ -87,20 +64,15 @@
           Encerradas ({{ filteredClosed.length }})
         </q-item-label>
         <q-list class="conversation-list" separator>
-          <q-item
-            v-for="conv in filteredClosed"
-            :key="conv.ds_key"
-            clickable
-            :active="selectedConversation?.ds_key === conv.ds_key"
-            active-class="bg-grey-3"
-            @click="selectConversation(conv)"
-          >
+          <q-item v-for="conv in filteredClosed" :key="conv.ds_key" clickable
+            :active="selectedConversation?.ds_key === conv.ds_key" active-class="bg-grey-3"
+            @click="selectConversation(conv)">
             <q-item-section avatar>
               <q-avatar color="grey-4" text-color="grey-7" size="40px">
                 {{ convInitials(conv)
                 }}<span v-if="convCounterparts(conv)" class="avatar-counter">{{
                   convCounterparts(conv)
-                }}</span>
+                  }}</span>
               </q-avatar>
             </q-item-section>
             <q-item-section>
@@ -130,7 +102,7 @@
             {{ convInitials(selectedConversation)
             }}<span v-if="convCounterparts(selectedConversation)" class="avatar-counter">{{
               convCounterparts(selectedConversation)
-            }}</span>
+              }}</span>
           </q-avatar>
           <div class="q-ml-sm">
             <div class="text-weight-bold text-grey-9" style="font-size: 15px">
@@ -141,21 +113,10 @@
             </div> -->
           </div>
           <q-space />
-          <q-badge
-            :color="selectedConversation.dt_ended ? 'grey-5' : 'teal'"
-            :label="selectedConversation.dt_ended ? 'Encerrada' : 'Ativa'"
-          />
-          <q-btn
-            v-if="!selectedConversation.dt_ended"
-            flat
-            round
-            dense
-            icon="fas fa-times-circle"
-            color="red-7"
-            size="sm"
-            class="q-ml-sm"
-            @click="confirmCloseConversation"
-          >
+          <q-badge :color="selectedConversation.dt_ended ? 'grey-5' : 'teal'"
+            :label="selectedConversation.dt_ended ? 'Encerrada' : 'Ativa'" />
+          <q-btn v-if="!selectedConversation.dt_ended" flat round dense icon="fas fa-times-circle" color="red-7"
+            size="sm" class="q-ml-sm" @click="confirmCloseConversation">
             <q-tooltip>Encerrar conversa</q-tooltip>
           </q-btn>
         </q-toolbar>
@@ -166,12 +127,7 @@
             <q-spinner-dots color="teal" size="32px" />
           </div>
           <template v-else>
-            <div
-              v-for="msg in messages"
-              :key="msg.ds_key"
-              class="message-row"
-              :class="msg.ds_sender"
-            >
+            <div v-for="msg in messages" :key="msg.ds_key" class="message-row" :class="msg.ds_sender">
               <div class="message-bubble" :class="participantClass(msg.ds_sender)">
                 <div class="message-sender">{{ senderLabel(msg.ds_sender) }}</div>
                 <div class="message-text">{{ msg.tx_content }}</div>
@@ -186,15 +142,8 @@
 
         <!-- Input Area -->
         <div class="chat-input-area bg-grey-2">
-          <q-input
-            v-model="newMessage"
-            outlined
-            dense
-            rounded
-            placeholder="Digite uma mensagem..."
-            bg-color="white"
-            @keyup.enter="sendMessage"
-          >
+          <q-input v-model="newMessage" outlined dense rounded placeholder="Digite uma mensagem..." bg-color="white"
+            @keyup.enter="sendMessage">
             <template #append>
               <q-btn flat round dense icon="fas fa-paper-plane" color="teal" @click="sendMessage" />
             </template>
@@ -656,22 +605,27 @@ export default {
   display: flex;
   animation: msgSlideIn 0.25s ease-out;
 }
+
 @keyframes msgSlideIn {
   from {
     opacity: 0;
     transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
 .message-row.customer {
   justify-content: flex-start;
 }
+
 .message-row.ai_bot {
   justify-content: flex-start;
 }
+
 .message-row.operator {
   justify-content: flex-end;
 }
@@ -684,15 +638,18 @@ export default {
   line-height: 1.45;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
 }
+
 .message-bubble.customer {
   background: #fff;
   border-top-left-radius: 2px;
 }
+
 .message-bubble.ai_bot {
   background: #f0f4f8;
   border-top-left-radius: 2px;
   color: #37474f;
 }
+
 .message-bubble.operator {
   background: #dcf8c6;
   border-top-right-radius: 2px;
@@ -703,12 +660,15 @@ export default {
   font-weight: 700;
   margin-bottom: 2px;
 }
+
 .message-bubble.customer .message-sender {
   color: #00796b;
 }
+
 .message-bubble.ai_bot .message-sender {
   color: #5c6bc0;
 }
+
 .message-bubble.operator .message-sender {
   color: #2e7d32;
 }
@@ -742,12 +702,12 @@ export default {
 
   /* Fixed trigger bar at the bottom — opens/closes the conversations sheet */
   .conversations-bar {
-    position: absolute;
+    position: FIXED;
     left: 0;
     right: 0;
     bottom: 0;
     height: 40px;
-    z-index: 10;
+    z-index: 100;
     display: flex;
     align-items: center;
     justify-content: center;
