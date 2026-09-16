@@ -126,18 +126,6 @@
       <template v-if="selectedConversation">
         <!-- Chat Header -->
         <q-toolbar class="chat-header bg-white">
-          <q-btn
-            v-if="isMobile"
-            flat
-            round
-            dense
-            icon="fas fa-bars"
-            color="grey-8"
-            class="q-mr-sm"
-            @click="toggleDrawer"
-          >
-            <q-tooltip>Ver conversas</q-tooltip>
-          </q-btn>
           <q-avatar :color="avatarColor(selectedConversation)" text-color="white" size="38px">
             {{ convInitials(selectedConversation)
             }}<span v-if="convCounterparts(selectedConversation)" class="avatar-counter">{{
@@ -216,25 +204,18 @@
 
       <!-- Empty State -->
       <div v-else class="chat-empty">
-        <q-btn
-          v-if="isMobile"
-          flat
-          round
-          dense
-          size="lg"
-          icon="fas fa-bars"
-          color="grey-8"
-          class="chat-empty-drawer-btn"
-          @click="toggleDrawer"
-        >
-          <q-tooltip>Ver conversas</q-tooltip>
-        </q-btn>
         <q-icon name="fas fa-comments" size="56px" color="grey-4" />
         <div class="text-h6 text-grey-6 q-mt-md">Selecione uma conversa</div>
         <div class="text-caption text-grey-5">
           Escolha uma conversa ao lado para visualizar as mensagens
         </div>
       </div>
+    </div>
+
+    <!-- Mobile trigger: opens the conversations bottom-sheet -->
+    <div v-if="isMobile" class="conversations-bar" @click="toggleDrawer">
+      <q-icon name="fas fa-chevron-up" size="14px" class="q-mr-sm" />
+      <span>CONVERSAS</span>
     </div>
   </div>
 </template>
@@ -753,10 +734,31 @@ export default {
   background: #fafafa;
 }
 
-/* ── RESPONSIVE (mobile: sidebar becomes a drawer) ──── */
+/* ── RESPONSIVE (mobile: sidebar becomes a bottom-sheet drawer) ──── */
 @media (max-width: 768px) {
   .chat-container {
     position: relative;
+  }
+
+  /* Fixed trigger bar at the bottom — opens/closes the conversations sheet */
+  .conversations-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 40px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #00897b;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.15);
   }
 
   .drawer-backdrop {
@@ -768,19 +770,24 @@ export default {
 
   .chat-sidebar {
     position: absolute;
-    top: 0;
     left: 0;
-    width: 85%;
-    max-width: 320px;
-    height: 100%;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    height: 75vh;
+    max-height: 100%;
     z-index: 20;
-    transform: translateX(-100%);
+    transform: translateY(100%);
     transition: transform 0.25s ease;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    border-right: none;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
   }
 
   .chat-sidebar.drawer-open {
-    transform: translateX(0);
+    transform: translateY(0);
   }
 
   .drawer-close-btn {
@@ -790,10 +797,7 @@ export default {
 
   .chat-panel {
     width: 100%;
-  }
-
-  .chat-empty-drawer-btn {
-    margin-bottom: 8px;
+    padding-bottom: 40px;
   }
 
   .messages-area {
